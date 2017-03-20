@@ -1,11 +1,19 @@
 FROM mhart/alpine-node:base
 
-ENV PATH /root/.yarn/bin:$PATH
+RUN mkdir -p /home/nobody/app && touch /home/nobody/.bashrc && chown -R nobody:nobody /home/nobody
+
+ENV HOME /home/nobody
+ENV PATH /home/nobody/.yarn/bin:$PATH
+WORKDIR /home/nobody/app
 
 RUN apk update \
   && apk add curl bash binutils tar \
-  && rm -rf /var/cache/apk/* \
-  && /bin/bash \
-  && touch ~/.bashrc \
-  && curl -o- -L https://yarnpkg.com/install.sh | bash \
-  && apk del curl tar binutils
+  && rm -rf /var/cache/apk/*
+
+USER nobody
+RUN curl -o- -L https://yarnpkg.com/install.sh | bash
+
+USER root
+RUN apk del curl tar binutils
+
+USER nobody
